@@ -17,7 +17,7 @@ After you have subscribed, you have to install a `Metering` resource for install
 Depending on your cluster, you can go with the default values.
 However, for the development cluster we have, the default values for resources are too high, so that the Presso coordinator pod can't be scheduled.
 
-Please be sure to reduce the resource requirements  like in given in this link::install/metering.yml[example].
+Please be sure to reduce the resource requirements  like in given in this link:install/metering.yml[example].
 
 This setup will work for simple demos.
 However, for production, you should reserve considerably more resources for the Metering installation.
@@ -33,7 +33,7 @@ In this repo, you find report queries for
 
 .Creating report data sources
 
-The `ReportDataSources` for periodically extracting that information from Prometheus are found in the directory link::datasources[`datasources`].
+The `ReportDataSources` for periodically extracting that information from Prometheus are found in the directory link:datasources/[`datasources`].
 
 You can apply them with:
 
@@ -69,7 +69,7 @@ kubectl apply -f queries/
 .Run report
 
 The reports themselves can be run by creating `Report` resources.
-You find some examples in the `reports/`` directory.
+You find some examples in the link:reports[`reports/`] directory.
 Before running the report, you have to adjust the input parameter within the report resources.
 I.e. the start and end date of the reporting period needs to be inserted.
 
