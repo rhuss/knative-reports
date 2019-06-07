@@ -1,0 +1,169 @@
+= Knative Serving Metering
+
+This document recommends how to integrate Knative serving metrics into Operator Framework's Metering component for generating reports on various metrics.
+
+== Overview of Operator Framework's Metering
+
+https://github.com/operator-framework/operator-metering[Operator Metering] is part of the _Operator Framework_ and provides components reporting on resource usage within a Kubernetes cluster. It's not confined on Operator usage only, but can be used to generate reports on anything running within a Kubernetes cluster
+
+=== Installation on OpenShift
+
+Metering can be easily installed via the OperatorHub in OCP 4.
+It's a subscription as usual.
+However, you can install only into a single project
+You should create a dedicated project for this, let's say `metering`.
+
+After you have subscribed, you have to install a `Metering` resource for installing Operator Metering components.
+Depending on your cluster, you can go with the default values.
+However, for the development cluster we have, the default values for resources are too high, so that the Presso coordinator pod can't be scheduled.
+
+Please be sure to reduce the resource requirements  like in this example:
+
+[source, yaml]
+----
+apiVersion: metering.openshift.io/v1alpha1
+kind: Metering
+metadata:
+  name: "operator-metering"
+spec:
+  presto:
+    spec:
+      presto:
+        coordinator:
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+        worker:
+          replicas: 0
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+----
+
+You find a sample resource in `install/metering.yml.`
+
+This setup will work for simple demos.
+However, for production, you should reserve considerably more resources for the Metering installation.
+
+Please refer to this https://github.com/operator-framework/operator-metering/blob/master/Documentation/tuning.md[tuning guide] for setting up metering resources.
+
+== Knative Serving Reports
+
+In this repo, you find report queries for
+
+* Accumulated CPU seconds used per Knative service over the report time-period
+* Average Memory consumption per Knative service over the report time-period
+
+.Creating report data sources
+
+The `ReportDataSources` for periodically extracting that information from Prometheus are found in the directory `datasources`.
+
+You can apply them with:
+
+[source, bash]
+----
+kubectl apply -f datasources/
+----
+
+The generated `ReportDataSource` resources are picked up by the OM operator which creates an own Presso database table which is updated every minute with data from Prometheus.
+
+You can verify these datasource tables with, e.g. (assuming your current project is `metering`)
+
+[source, bash]
+----
+$ oc exec -it "$(oc get pods -l app=presto,presto=coordinator -o name | cut -d/ -f2)"  \
+   -- /usr/local/bin/presto-cli --server localhost:8080 --catalog hive \
+                                --schema default --user root
+presto:default> show tables;
+...
+presto:default> select * from  datasource_metering_knative_service_cpu_usage;
+....
+----
+
+.Creating report queries
+
+The predefined `ReportQuery` resources are stored in `queries/` and can be applied with
+
+[source, bash]
+----
+kubectl apply -f queries/
+----
+
+.Run report
+
+The reports themselves can be run by creating `Report` resources.
+You find some examples in the `reports/`` directory.
+Before running the report, you have to adjust the input parameter within the report resources.
+I.e. the start and end date of the reporting period needs to be inserted.
+
+After this, apply the report.
+
+[source, bash]
+----
+# Set reportingStart and reportingEnd:
+$ vi reports/knative-service-cpu-usage-report.yml
+
+# Apply it
+$ kubectl apply -f reports/knative-service-cpu-usage-report.yml
+
+# Check the report after some time
+$ kubectl get report
+NAME                        QUERY                       SCHEDULE   RUNNING    FAILED   LAST REPORT TIME       AGE
+knative-service-cpu-usage   knative-service-cpu-usage              Finished            2019-06-30T23:59:59Z   10h
+----
+
+.Access the report
+
+For accessing the reports, there is no UI or CLI available currently.
+The reports are accessed over a REST API or directly from within the Presso database.
+
+You have the following options:
+
+* Use the OpenShift route exposed directly
+
+[source, bash]
+----
+# Get bearer token for OpenShift route
+TOKEN=$(oc serviceaccounts get-token reporting-operator)
+
+# Curl reporting API. You can check the base url with `oc get route`
+curl -H "Authorization: Bearer $TOKEN" -k "https://metering-metering.apps.rhuss-dev.devcluster.openshift.com/api/v1/reports/get?name=knative-service-cpu-usage&namespace=metering&format=tab"
+
+----
+
+* Use the Presso CLI to query on generated report table. For this, jump into the presso-coordinator pod as described above for verifying the data source table. Then use the following query to get to the report
+
+[source, bash]
+----
+select * from report_metering_knative_service_cpu_usage;
+----
+
+* Create a port forward to the `reporting-operator` and query the report locally:
+
+[source, bash]
+----
+# Get reporting operator pod
+pod=$(oc get pods -l app=reporting-operator -o name | cut -d/ -f2)
+
+# Start port-forward in the background
+kubectl port-forward $pod 8080:8080 >/dev/null 2>&1 &
+
+# Query reporting operator via rest API
+curl "http://127.0.0.1:8080/api/v1/reports/get?name=knative-service-cpu-usage&namespace=metering&format=tab"
+----
+
+This will result in an output like
+[source]
+--------
+period_start            period_end            namespace    service            data_start            data_end            service_cpu_seconds
+2019-06-01 00:00:00 +0000 UTC    2019-06-30 23:59:59 +0000 UTC    default        hello            2019-06-06 18:15:00 +0000 UTC    2019-06-06 20:32:00 +0000 UTC    298.535220
+2019-06-01 00:00:00 +0000 UTC    2019-06-30 23:59:59 +0000 UTC    default        random-generator    2019-06-06 18:15:00 +0000 UTC    2019-06-06 20:32:00 +0000 UTC    418.119120
+--------

@@ -1,0 +1,12 @@
+# Report which is supposed to always work as it is provided by OM
+# Helpful to find out whether it your fault when your report fails
+# or whether the installation is messed up
+apiVersion: metering.openshift.io/v1alpha1
+kind: Report
+metadata:
+  name: test
+spec:
+  reportingStart: '2019-06-01T00:00:00Z'
+  reportingEnd: '2019-06-30T23:59:59Z'
+  query: pod-cpu-usage
+  runImmediately: true
