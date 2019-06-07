@@ -17,38 +17,7 @@ After you have subscribed, you have to install a `Metering` resource for install
 Depending on your cluster, you can go with the default values.
 However, for the development cluster we have, the default values for resources are too high, so that the Presso coordinator pod can't be scheduled.
 
-Please be sure to reduce the resource requirements  like in this example:
-
-[source, yaml]
-----
-apiVersion: metering.openshift.io/v1alpha1
-kind: Metering
-metadata:
-  name: "operator-metering"
-spec:
-  presto:
-    spec:
-      presto:
-        coordinator:
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "1"
-            limits:
-              memory: "2Gi"
-              cpu: "1"
-        worker:
-          replicas: 0
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "1"
-            limits:
-              memory: "2Gi"
-              cpu: "1"
-----
-
-You find a sample resource in `install/metering.yml.`
+Please be sure to reduce the resource requirements  like in given in this link::install/metering.yml[example].
 
 This setup will work for simple demos.
 However, for production, you should reserve considerably more resources for the Metering installation.
@@ -64,7 +33,7 @@ In this repo, you find report queries for
 
 .Creating report data sources
 
-The `ReportDataSources` for periodically extracting that information from Prometheus are found in the directory `datasources`.
+The `ReportDataSources` for periodically extracting that information from Prometheus are found in the directory link::datasources[`datasources`].
 
 You can apply them with:
 
@@ -90,7 +59,7 @@ presto:default> select * from  datasource_metering_knative_service_cpu_usage;
 
 .Creating report queries
 
-The predefined `ReportQuery` resources are stored in `queries/` and can be applied with
+The predefined `ReportQuery` resources are stored in link:queries/[`queries/`] and can be applied with
 
 [source, bash]
 ----
