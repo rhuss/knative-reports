@@ -42,7 +42,7 @@ You can apply them with:
 kubectl apply -f datasources/
 ----
 
-The generated `ReportDataSource` resources are picked up by the OM operator which creates an own Presso database table which is updated every minute with data from Prometheus.
+The generated `ReportDataSource` resources are picked up by the OM operator which creates an own Presto database table which is updated every minute with data from Prometheus.
 
 You can verify these datasource tables with, e.g. (assuming your current project is `metering`)
 
@@ -92,7 +92,7 @@ knative-service-cpu-usage   knative-service-cpu-usage              Finished     
 .Access the report
 
 For accessing the reports, there is no UI or CLI available currently.
-The reports are accessed over a REST API or directly from within the Presso database.
+The reports are accessed over a REST API or directly from within the Presto database.
 
 You have the following options:
 
@@ -108,7 +108,7 @@ curl -H "Authorization: Bearer $TOKEN" -k "https://metering-metering.apps.rhuss-
 
 ----
 
-* Use the Presso CLI to query on generated report table. For this, jump into the presso-coordinator pod as described above for verifying the data source table. Then use the following query to get to the report
+* Use the Presto CLI to query on generated report table. For this, jump into the presso-coordinator pod as described above for verifying the data source table. Then use the following query to get to the report
 
 [source, bash]
 ----
