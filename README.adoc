@@ -15,7 +15,7 @@ You should create a dedicated project for this, let's say `metering`.
 
 After you have subscribed, you have to install a `Metering` resource for installing Operator Metering components.
 Depending on your cluster, you can go with the default values.
-However, for the development cluster we have, the default values for resources are too high, so that the Presso coordinator pod can't be scheduled.
+However, for the development cluster we have, the default values for resources are too high, so that the Presto coordinator pod can't be scheduled.
 
 Please be sure to reduce the resource requirements  like in given in this link:install/metering.yml[example].
 
