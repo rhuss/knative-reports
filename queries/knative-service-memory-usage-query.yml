@@ -41,7 +41,7 @@ spec:
       min("timestamp") as data_start,
       max("timestamp") as data_end,
       sum(amount * "timeprecision") AS service_usage_memory_byte_seconds
-    FROM '{| dataSourceTableName .Report.Inputs.KnativeServiceMemoryUsageDataSource |}'
+    FROM {| dataSourceTableName .Report.Inputs.KnativeServiceMemoryUsageDataSource |}
     WHERE "timestamp" >= timestamp '{| default .Report.ReportingStart .Report.Inputs.ReportingStart | prestoTimestamp |}'
     AND "timestamp" < timestamp '{| default .Report.ReportingEnd .Report.Inputs.ReportingEnd | prestoTimestamp |}'
     GROUP BY labels['namespace'],labels['label_serving_knative_dev_service']
