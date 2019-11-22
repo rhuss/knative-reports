@@ -1,6 +1,6 @@
 # Report showing the overall cpu usage in seconds over
 # the configured period
-apiVersion: metering.openshift.io/v1alpha1
+apiVersion: metering.openshift.io/v1
 kind: Report
 metadata:
   name: knative-service-cpu-usage

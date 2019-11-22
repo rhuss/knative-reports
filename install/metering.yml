@@ -1,39 +1,28 @@
-apiVersion: metering.openshift.io/v1alpha1
-kind: Metering
+apiVersion: metering.openshift.io/v1
+kind: MeteringConfig
 metadata:
   name: "operator-metering"
 spec:
+  storage:
+    type: "hive"
+    hive:
+      type: "s3"
+      s3:
+        # Manually created bucket
+        bucket: "openshift-metering-storage"
+        region: "us-west-1"
+        # Secret can be created via oc create secret -n openshift-metering generic my-aws-secret --from-literal=aws-access-key-id=<my-key-id>  --from-literal=aws-secret-access-key=<my-key>
+        secretName: "my-aws-secret"
+        createBucket: false
   reporting-operator:
     spec:
       route:
         enabled: true
-
       authProxy:
         enabled: true
-
-        # htpasswdData can contain htpasswd file contents for allowing auth
-        # using a static list of usernames and their password hashes.
-        #
-        # generated htpasswdData using: `htpasswd -nb -s testuser password123`
-        # change REPLACEME to the output of your htpasswd command
-        # Password is "redhat"
         htpasswdData: |
           kubeadmin:{SHA}PHZ8Qa+xKtoUAZDtgts/2TDi76M=
-        # cookieSeed is used to protect the cookie created if accessing the API
-        # via your browser.
-        #
-        # generate a 32 character random string using a command of your choice,
-        # for example: `openssl rand -base64 32 | head -c32; echo`
-        # cookieSeed: "RCFE+QpwGWL2bupP+wv4EIOnYlbaRmto"
-        #
-        # change REPLACEME to the output of your command
         cookieSeed: "UlHzGuwd0xScKlk0UTOvxJI7y0YxR8+2"
-
-        # Enables authenticating using a bearer token from a serviceAccount or user.
-        # It must have have one of the following roles:
-        # "report-exporter", "reporting-admin" or "reporting-viewer"
-        # or it must have permissions granting "GET reports/export":
-        # the export subresource of "reports".
         subjectAccessReviewEnabled: true
         delegateURLsEnabled: true
       resources:
@@ -45,70 +34,41 @@ spec:
           cpu: "100m"
   presto:
     spec:
-      presto:
-        coordinator:
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "1"
-            limits:
-              memory: "2Gi"
-              cpu: "1"
-        worker:
-          replicas: 0
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "1"
-            limits:
-              memory: "2Gi"
-              cpu: "1"
-      hive:
-        metastore:
-          resources:
-            requests:
-              memory: "650Mi"
-              cpu: "500m"
-            limits:
-              memory: "650Mi"
-              cpu: "500m"
-          storage:
-            create: true
-            # Default to null, which means using the default storage class
-            class: null
-            size: "5Gi"
-        server:
-          resources:
-            requests:
-              memory: "500Mi"
-              cpu: "100m"
-            limits:
-              memory: "500Mi"
-              cpu: "100m"
-  hdfs:
+      coordinator:
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+      worker:
+        replicas: 0
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+  hive:
     spec:
-      datanode:
-        replicas: 1
+      metastore:
         resources:
           requests:
-            memory: "250Mi"
-            cpu: "250m"
+            memory: "650Mi"
+            cpu: "500m"
           limits:
-            memory: "250Mi"
-            cpu: "250m"
+            memory: "650Mi"
+            cpu: "500m"
         storage:
-          # Default to null, which means using the default storage class
-          class: null
+          create: true
           size: "5Gi"
-      namenode:
+      server:
         resources:
           requests:
-            memory: "350Mi"
-            cpu: "250m"
+            memory: "500Mi"
+            cpu: "100m"
           limits:
-            memory: "350Mi"
-            cpu: "250m"
-        storage:
-          # Default to null, which means using the default storage class
-          class: null
-          size: "5Gi"
+            memory: "500Mi"
+            cpu: "100m"

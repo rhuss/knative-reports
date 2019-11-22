@@ -1,4 +1,4 @@
-apiVersion: metering.openshift.io/v1alpha1
+apiVersion: metering.openshift.io/v1
 kind: ReportDataSource
 metadata:
   name: knative-service-cpu-usage

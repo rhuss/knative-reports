@@ -1,5 +1,5 @@
 # Report for showing the averaged memory usage over this time period
-apiVersion: metering.openshift.io/v1alpha1
+apiVersion: metering.openshift.io/v1
 kind: Report
 metadata:
   name: knative-service-memory-usage
