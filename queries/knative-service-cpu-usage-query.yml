@@ -1,4 +1,4 @@
-apiVersion: metering.openshift.io/v1alpha1
+apiVersion: metering.openshift.io/v1
 kind: ReportQuery
 metadata:
   name: knative-service-cpu-usage
@@ -7,7 +7,7 @@ spec:
   - name: ReportingStart
     type: time
   - name: ReportingEnd
-    type: timeq
+    type: time
   - default: knative-service-cpu-usage
     name: KnativeServiceCpuUsageDataSource
     type: ReportDataSource
